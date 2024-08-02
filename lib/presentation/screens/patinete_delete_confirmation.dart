@@ -21,7 +21,7 @@ class PatineteDeleteConfirmation extends StatelessWidget {
           },
           child: const Text('Cancelar'),
         ),
-        TextButton(
+        ElevatedButton(
           onPressed: () {
             context
                 .read<PatineteCubit>()

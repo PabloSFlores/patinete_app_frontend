@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../data/models/patinete_model.dart';
+import '../../helpers/navigator_key.dart';
 import '../../presentation/cubit/patinete_state.dart';
 import '../cubit/patinete_cubit.dart';
 import 'patinete_delete_confirmation.dart';
@@ -8,92 +10,107 @@ import 'patinete_details.dart';
 import 'patinete_form.dart';
 
 class PatineteTable extends StatelessWidget {
-  const PatineteTable({super.key});
-
   @override
   Widget build(BuildContext context) {
     // Realiza la petición para cargar los patinetes
     context.read<PatineteCubit>().consultarPatinetes();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Patinetes'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => PatineteForm(),
-              );
-            },
-          ),
-        ],
-      ),
-      body: BlocBuilder<PatineteCubit, PatineteState>(
-        builder: (context, state) {
-          if (state is PatineteLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is PatineteSuccess) {
-            return DataTable(
-              columns: const [
-                DataColumn(label: Text('ID')),
-                DataColumn(label: Text('Marca')),
-                DataColumn(label: Text('Modelo')),
-                DataColumn(label: Text('Tipo')),
-                DataColumn(label: Text('Color')),
-                DataColumn(label: Text('Acciones')),
-              ],
-              rows: state.patinetes.map((patinete) {
-                return DataRow(cells: [
-                  DataCell(Text(patinete.id.toString())),
-                  DataCell(Text(patinete.marca)),
-                  DataCell(Text(patinete.modelo)),
-                  DataCell(Text(patinete.tipo)),
-                  DataCell(Text(patinete.color)),
-                  DataCell(Row(
+    return BlocBuilder<PatineteCubit, PatineteState>(
+      builder: (context, state) {
+        if (state is PatineteLoading) {
+          return Center(child: CircularProgressIndicator());
+        } else if (state is PatineteSuccess) {
+          return ListView.builder(
+            padding: EdgeInsets.all(16.0),
+            itemCount: state.patinetes.length,
+            itemBuilder: (context, index) {
+              final patinete = state.patinetes[index];
+              return Card(
+                elevation: 4.0,
+                margin: EdgeInsets.symmetric(vertical: 8.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.visibility),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) =>
-                                PatineteDetails(patinete: patinete),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) =>
-                                PatineteForm(patinete: patinete),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) =>
-                                PatineteDeleteConfirmation(patinete: patinete),
-                          );
-                        },
+                      Text('ID: ${patinete.id}',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 4.0),
+                      Text('Marca: ${patinete.marca}',
+                          style: TextStyle(fontSize: 14)),
+                      SizedBox(height: 4.0),
+                      Text('Modelo: ${patinete.modelo}',
+                          style: TextStyle(fontSize: 14)),
+                      SizedBox(height: 4.0),
+                      Text('Tipo: ${patinete.tipo}',
+                          style: TextStyle(fontSize: 14)),
+                      SizedBox(height: 4.0),
+                      Text('Color: ${patinete.color}',
+                          style: TextStyle(fontSize: 14)),
+                      SizedBox(height: 8.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.visibility,
+                                color: Colors.blue, size: 20),
+                            onPressed: () {
+                              showPatineteDetails(context, patinete);
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.edit,
+                                color: Colors.orange, size: 20),
+                            onPressed: () {
+                              showPatineteForm(context, patinete);
+                            },
+                          ),
+                          IconButton(
+                            icon:
+                                Icon(Icons.delete, color: Colors.red, size: 20),
+                            onPressed: () {
+                              showPatineteDeleteConfirmation(context, patinete);
+                            },
+                          ),
+                        ],
                       ),
                     ],
-                  )),
-                ]);
-              }).toList(),
-            );
-          } else if (state is PatineteError) {
-            return Center(child: Text('Error: ${state.message}'));
-          }
-          return Center(child: Text('No hay patinetes disponibles.'));
-        },
-      ),
+                  ),
+                ),
+              );
+            },
+          );
+        } else if (state is PatineteError) {
+          return Center(child: Text('Error: ${state.message}'));
+        }
+        return Center(child: Text('No hay patinetes disponibles.'));
+      },
+    );
+  }
+
+  void showPatineteDetails(BuildContext context, PatineteModel patinete) {
+    showDialog(
+      context: navigatorKey.currentContext!,
+      builder: (context) => PatineteDetails(patinete: patinete),
+    );
+  }
+
+  void showPatineteForm(BuildContext context, PatineteModel? patinete) {
+    showDialog(
+      context: navigatorKey.currentContext!,
+      builder: (context) => PatineteForm(patinete: patinete),
+    );
+  }
+
+  void showPatineteDeleteConfirmation(
+      BuildContext context, PatineteModel patinete) {
+    showDialog(
+      context: navigatorKey.currentContext!,
+      builder: (context) => PatineteDeleteConfirmation(patinete: patinete),
     );
   }
 }

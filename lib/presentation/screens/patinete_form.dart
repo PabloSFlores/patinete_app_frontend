@@ -25,53 +25,22 @@ class PatineteForm extends StatelessWidget {
     }
 
     return AlertDialog(
-      title: Text(patinete == null ? 'Crear Patinete' : 'Editar Patinete'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _marcaController,
-              decoration: const InputDecoration(labelText: 'Marca'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingrese la marca';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _modeloController,
-              decoration: const InputDecoration(labelText: 'Modelo'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingrese el modelo';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _tipoController,
-              decoration: const InputDecoration(labelText: 'Tipo'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingrese el tipo';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _colorController,
-              decoration: const InputDecoration(labelText: 'Color'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingrese el color';
-                }
-                return null;
-              },
-            ),
-          ],
+      title: Text(
+        patinete == null ? 'Crear Patinete' : 'Editar Patinete',
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+      ),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildTextField(_marcaController, 'Marca'),
+              _buildTextField(_modeloController, 'Modelo'),
+              _buildTextField(_tipoController, 'Tipo'),
+              _buildTextField(_colorController, 'Color'),
+            ],
+          ),
         ),
       ),
       actions: [
@@ -81,7 +50,7 @@ class PatineteForm extends StatelessWidget {
           },
           child: const Text('Cancelar'),
         ),
-        TextButton(
+        ElevatedButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               final patineteCubit = context.read<PatineteCubit>();
@@ -93,7 +62,7 @@ class PatineteForm extends StatelessWidget {
                     tipo: _tipoController.text,
                     color: _colorController.text,
                   ),
-                ).then((_) => Navigator.of(context).pop());
+                );
               } else {
                 patineteCubit.actualizarPatinete(
                   PatineteModel(
@@ -103,13 +72,37 @@ class PatineteForm extends StatelessWidget {
                     tipo: _tipoController.text,
                     color: _colorController.text,
                   ),
-                ).then((_) => Navigator.of(context).pop());
+                );
               }
+              Navigator.of(context).pop();
             }
           },
           child: Text(patinete == null ? 'Crear' : 'Actualizar'),
         ),
       ],
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          contentPadding:
+              EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Por favor ingrese $label';
+          }
+          return null;
+        },
+      ),
     );
   }
 }
